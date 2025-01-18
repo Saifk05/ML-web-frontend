@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Mitigation Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<style>
+    /* Header Section */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #212121;
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 20px; /* Adjust the logo size here */
+    margin-right: 15px;
+}
+
+.logo h1 {
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.nav {
+    display: flex;
+    gap: 15px;
+    margin-right: 100px;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.nav a:hover {
+    color: #d9d9d9;
+}
+
+
+    /* Heading Style */
+    h1 {
+        text-align: center;
+        margin-top: 18px;
+        margin-left: -650px;
+        /* margin: 20px 0; */
+        color: #ffffff;
+        font-size: 1.5rem;
+        display: inline-block;
+        animation: fade-in 1.2s ease-in-out;
+    }
+
+    /* Table Styles */
+    #traffic-table {
+        width: 90%;
+        margin: 30px auto;
+        margin-top: 120px;
+        border-collapse: collapse;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        animation: zoom-in 0.8s ease-in-out;
+    }
+
+    #traffic-table th {
+        background-color: #4CAF50;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 1rem;
+        text-transform: uppercase;
+    }
+
+    #traffic-table td {
+        padding: 15px;
+        text-align: center;
+        color: #555;
+        border-bottom: 1px solid #e0e0e0;
+        animation: slide-up 1s ease-in-out;
+    }
+
+    /* Status Styling */
+    #traffic-table td.status {
+        font-weight: bold;
+    }
+
+    #traffic-table td.status.ddos {
+        color: red;
+    }
+
+    #traffic-table td.status.normal {
+        color: green;
+    }
+
+    /* Select Checkbox */
+    #traffic-table td input[type="checkbox"] {
+        transform: scale(1.2);
+        cursor: pointer;
+    }
+
+    /* Mitigation Button */
+    .mitigation-container {
+        text-align: center;
+        margin: 20px 0;
+    }
+    .miti-img{
+        width: 50px;
+        height: 50px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+        color: white;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        animation: fade-in 1s ease-in-out;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Mitigation Result */
+    #mitigation-result {
+        margin-top: 20px;
+        font-size: 1rem;
+        color: #333;
+        text-align: center;
+        animation: slide-in 1s ease-in-out;
+    }
+
+    /* Footer Section */
+    .footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 15px 0;
+        margin-top: 20px;
+        animation: fade-in 1.5s ease-in-out;
+    }
+
+    .footer a {
+        color: #4CAF50;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .footer a:hover {
+        text-decoration: underline;
+    }
+
+    /* Keyframes for Animations */
+    @keyframes fade-in {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slide-down {
+        0% {
+            transform: translateY(-100%);
+        }
+        100% {
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slide-up {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slide-in {
+        0% {
+            transform: translateX(-50px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes zoom-in {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Responsive Design */
+    @media screen and (max-width: 768px) {
+        #traffic-table {
+            width: 100%;
+        }
+
+        #traffic-table th,
+        #traffic-table td {
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .nav {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+    }
+</style>
+<body>
+    <header class="header">
+        <div class="header-logo">
+            <a href="/">
+                <img class="miti-img" src="/static/logo.jpg" alt="Logo">
+            </a>
+        </div>
+        <h1 class="header-title">Traffic Mitigation</h1>
+        <nav class="nav">
+            <a href="/">Home</a>
+            <a href="/info">Classification</a>
+            <a href="/mitigation">Mitigation</a>
+            <a href="/visual">Visualization</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+
+    <table id="traffic-table">
+        <thead>
+            <tr>
+                <th>Botnet IP</th>
+                <th>Bytes Sent</th>
+                <th>Bytes Received</th>
+                <th>Status</th>
+                <th>Select</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="mitigation-container">
+        <button id="mitigate-btn" class="btn">Mitigate Selected</button>
+        <div id="mitigation-result"></div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <p>2024 DDoS Mitigation Dashboard. All Rights Reserved.</p>
+        
+    </footer>
+
+    <script src="/static/mitigation.js"></script>
+</body>
+</html>

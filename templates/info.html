@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <style>
+        /* General Body Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #212121;
+            color: white;
+            padding: 15px 20px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        /* Table Styles */
+        #traffic-table {
+            width: 80%;
+            margin: 100px auto 20px;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border-radius: 8px;
+        }
+
+        #traffic-table thead {
+            background-color: #4CAF50;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        #traffic-table thead th {
+            padding: 15px;
+        }
+
+        #traffic-table tbody td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        #traffic-table tbody td.status-ddos {
+            color: red;
+            font-weight: bold;
+        }
+
+        #traffic-table tbody td.status-normal {
+            color: green;
+            font-weight: bold;
+        }
+
+        /* Animation */
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            animation: fade-in 1.2s ease-in-out;
+        }
+
+        .fade-in {
+            animation: fade-in 0.5s ease-in-out;
+        }
+
+        /* Buttons */
+        .filter-buttons {
+            margin: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+
+    <header class="header">
+        <div class="logo">
+            <img src="/static/logo.jpg" alt="DDoS Logo" />
+            <h1>Traffic Monitoring</h1>
+        </div>
+        <nav class="nav">
+            <a href="/">Home</a>
+            <a href="/info">Classification</a>
+            <a href="/mitigation">Mitigation</a>
+            <a href="/visual">Visualization</a>
+        </nav>
+    </header>
+
+    <h1>DDoS Traffic Dashboard</h1>
+
+    <div class="filter-buttons">
+        <button id="show-all" class="btn">Show All</button>
+        <button id="show-ddos" class="btn">DDoS Attack</button>
+        <button id="show-normal" class="btn">Normal Traffic</button>
+    </div>
+
+    <table id="traffic-table">
+        <thead>
+            <tr>
+                <th>Botnet IP</th>
+                <th>Bytes Sent</th>
+                <th>Bytes Received</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be dynamically generated -->
+        </tbody>
+    </table>
+
+    <script>
+        // Generate random IP address
+        function getRandomIP() {
+            return `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+        }
+
+        // Generate random traffic data
+        function getRandomTrafficData() {
+            const data = [];
+            for (let i = 0; i < 10; i++) {
+                const bytesSent = Math.floor(Math.random() * 10000);
+                const bytesReceived = Math.floor(Math.random() * 10000);
+                const status = bytesSent > 5000 || bytesReceived > 5000 ? "DDoS Attack" : "Normal Traffic";
+                data.push({
+                    botnet_ip: getRandomIP(),
+                    bytes_sent: bytesSent,
+                    bytes_received: bytesReceived,
+                    status: status,
+                });
+            }
+            return data;
+        }
+
+        let tableData = getRandomTrafficData();
+        const tableBody = document.querySelector("#traffic-table tbody");
+
+        // Function to render the table
+        function renderTable(data) {
+            tableBody.innerHTML = ""; // Clear the table
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.classList.add("fade-in"); // Add animation class
+                tr.innerHTML = `
+                    <td>${row.botnet_ip}</td>
+                    <td>${row.bytes_sent}</td>
+                    <td>${row.bytes_received}</td>
+                    <td class="${row.status === "DDoS Attack" ? "status-ddos" : "status-normal"}">
+                        ${row.status}
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Initial render
+        renderTable(tableData);
+
+        // Button event listeners
+        document.getElementById("show-all").addEventListener("click", () => renderTable(tableData));
+
+        document.getElementById("show-ddos").addEventListener("click", () => {
+            const filteredData = tableData.filter(row => row.status === "DDoS Attack");
+            renderTable(filteredData);
+        });
+
+        document.getElementById("show-normal").addEventListener("click", () => {
+            const filteredData = tableData.filter(row => row.status === "Normal Traffic");
+            renderTable(filteredData);
+        });
+
+        // Refresh data every 10 seconds
+        setInterval(() => {
+            tableData = getRandomTrafficData();
+            renderTable(tableData);
+        }, 10000);
+    </script>
+</body>
+</html>

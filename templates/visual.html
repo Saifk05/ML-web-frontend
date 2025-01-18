@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Traffic Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #eef2f3, #ffffff);
+            color: #333;
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background-color: #1F1F1F;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+            margin-right: 100px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 15px;
+            font-size: 2rem;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+            padding: 20px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 250px;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <a href="/">
+            <img src="/static/logo.jpg" alt="DDoS Logo">
+        </a>
+            <h1>DDoS Mitigation Dashboard</h1>
+        </div>
+        <nav class="nav">
+            <a href="/">Home</a>
+            <a href="/info">Classification</a>
+            <a href="/mitigation">Mitigation</a>
+            <a href="/visual">Visualization</a>
+        </nav>
+    </header>
+
+    <div class="chart-grid">
+        <div class="chart-container">
+            <h3>Traffic Distribution</h3>
+            <canvas id="pieChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Normal Traffic</h3>
+            <canvas id="normalTrafficChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>DDoS Traffic</h3>
+            <canvas id="ddosTrafficChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Traffic Over Time</h3>
+            <canvas id="trafficOverTimeChart"></canvas>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 DDoS Mitigation Dashboard. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Generate random IP address
+        function getRandomIP() {
+            return Math.floor(Math.random() * 256) + '.' +
+                   Math.floor(Math.random() * 256) + '.' +
+                   Math.floor(Math.random() * 256) + '.' +
+                   Math.floor(Math.random() * 256);
+        }
+
+        // Generate random traffic data
+        function getRandomTrafficData() {
+            const data = [];
+            for (let i = 0; i < 10; i++) {
+                const bytesSent = Math.floor(Math.random() * 10000);
+                const bytesReceived = Math.floor(Math.random() * 10000);
+                const status = bytesSent > 5000 || bytesReceived > 5000 ? "DDoS Attack" : "Normal Traffic";
+                data.push({
+                    botnet_ip: getRandomIP(),
+                    bytes_sent: bytesSent,
+                    bytes_received: bytesReceived,
+                    status: status
+                });
+            }
+            return data;
+        }
+
+        let trafficData = getRandomTrafficData();
+
+        // Initialize Charts
+        const pieCtx = document.getElementById("pieChart").getContext("2d");
+        const pieChart = new Chart(pieCtx, {
+            type: "pie",
+            data: {
+                labels: ["Normal Traffic", "DDoS Attack"],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ["#4CAF50", "#FF6347"]
+                }]
+            }
+        });
+
+        const normalCtx = document.getElementById("normalTrafficChart").getContext("2d");
+        const normalChart = new Chart(normalCtx, {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [
+                    { label: "Bytes Sent", data: [], backgroundColor: "skyblue" },
+                    { label: "Bytes Received", data: [], backgroundColor: "orange" }
+                ]
+            }
+        });
+
+        const ddosCtx = document.getElementById("ddosTrafficChart").getContext("2d");
+        const ddosChart = new Chart(ddosCtx, {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [
+                    { label: "Bytes Sent", data: [], backgroundColor: "red" },
+                    { label: "Bytes Received", data: [], backgroundColor: "yellow" }
+                ]
+            }
+        });
+
+        const timeCtx = document.getElementById("trafficOverTimeChart").getContext("2d");
+        const timeChart = new Chart(timeCtx, {
+            type: "line",
+            data: {
+                labels: Array.from({ length: 10 }, (_, i) => `T-${i + 1}`), // Fixed template literal
+                datasets: [
+                    { label: "Normal Traffic", data: [], borderColor: "#4CAF50", fill: false },
+                    { label: "DDoS Traffic", data: [], borderColor: "#FF6347", fill: false }
+                ]
+            }
+        });
+
+        function updateCharts() {
+            trafficData = getRandomTrafficData();
+
+            // Update Pie Chart
+            const normalCount = trafficData.filter(row => row.status === "Normal Traffic").length;
+            const ddosCount = trafficData.filter(row => row.status === "DDoS Attack").length;
+            pieChart.data.datasets[0].data = [normalCount, ddosCount];
+            pieChart.update();
+
+            // Update Normal Traffic Chart
+            const normalData = trafficData.filter(row => row.status === "Normal Traffic");
+            normalChart.data.labels = normalData.map(row => row.botnet_ip);
+            normalChart.data.datasets[0].data = normalData.map(row => row.bytes_sent);
+            normalChart.data.datasets[1].data = normalData.map(row => row.bytes_received);
+            normalChart.update();
+
+            // Update DDoS Traffic Chart
+            const ddosData = trafficData.filter(row => row.status === "DDoS Attack");
+            ddosChart.data.labels = ddosData.map(row => row.botnet_ip);
+            ddosChart.data.datasets[0].data = ddosData.map(row => row.bytes_sent);
+            ddosChart.data.datasets[1].data = ddosData.map(row => row.bytes_received);
+            ddosChart.update();
+
+            // Update Traffic Over Time Chart
+            const normalTrafficOverTime = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10000));
+            const ddosTrafficOverTime = Array.from({ length: 10 }, () => Math.floor(Math.random() * 10000));
+            timeChart.data.datasets[0].data = normalTrafficOverTime;
+            timeChart.data.datasets[1].data = ddosTrafficOverTime;
+            timeChart.update();
+        }
+
+        updateCharts();
+        setInterval(updateCharts, 5000);
+    </script>
+</body>
+</html>
